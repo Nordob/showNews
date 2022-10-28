@@ -1,4 +1,4 @@
-# hello-world
+# showNews
 
 ## Project setup
 ```
