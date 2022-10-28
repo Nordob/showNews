@@ -212,11 +212,11 @@ export default {
   }
 
   &:hover {
-    background: lighten(color('main-yellow'), 3);
-    border-color: lighten(color('main-yellow'), 3);
+    background: #FFE600;
+    border-color: #FFE600;
 
     &::after {
-      background: lighten(color('main-yellow'), 3);
+      background: #FFE600;
     }
   }
 
