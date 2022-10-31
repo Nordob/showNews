@@ -1,180 +1,51 @@
 <template>
   <div class="app" id="app">
+    <headBlock/>
     <div class="news-list">
-      <SwitchElem
-          :data="switchFilters"
-          :double-click-to-remove="false"
-          :active="selectFilterNum"
-          :disabled="loading"
-          label="category_name_plural"
-          track-by="id"
-          class="news-list__switch"
-          overflow-hidden
-      />
       <div
-          v-if="newsLists && !loading"
+          v-if="allNews"
           class="news-list__wrapper"
       >
         <NewsCard
-            v-for="(news, index) in newsLists"
+            v-for="(news, index) in allNews"
             :key="index"
             :news="news"
             class="card-news"
         />
       </div>
       <h2
-          v-else-if="!loading && !newsLists"
+          v-else-if="!allNews"
           class="news-list__title"
       >
         Новости отсутствуют
       </h2>
-      <!--    <global-pagination-->
-      <!--        v-if="!loading && newsAllPages > 1 && allNews.length"-->
-      <!--        :current-page="newsCurrentPage"-->
-      <!--        :pages="newsAllPages"-->
-      <!--        class="news-list__pagination"-->
-      <!--    />-->
-      <!--    <div v-if="loading" class="preloader">-->
-      <!--      <global-preloader class="global-preloader"/>-->
-      <!--    </div>-->
+      <button
+          class="btn"
+          @click="addNews"
+      >Добавить посты</button>
     </div>
   </div>
 </template>
 
 <script>
-import { mapActions } from 'vuex'
-import scrollToTopElement from './components/mixins/scrollToTopElement'
-import SwitchElem from './components/SwitchElem'
 import NewsCard from "./components/NewsCard";
+import headBlock from "./components/headBlock";
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   components: {
-    SwitchElem,
-    NewsCard
+    NewsCard,
+    headBlock
   },
-  mixins: [scrollToTopElement],
-  data() {
-    return {
-      allNews:[],
-      newsCurrentPage: null,
-      newsAllPages: null,
-      loading: false,
-      perPage: 9,
-      selectFilterNum: null,
-      firstLoad: true,
-      switchFilters: [{
-        category_name_plural: 'Все',
-        id: 0
-      }]
-    }
-  },
-  watch: {
-    //'$route': '$fetch'
-  },
-  created() {
-    //const query = { ...this.$route.query }
-
-    // if (query.hasOwnProperty('filter')) {
-    //   const filter = Number(query.filter)
-    //
-    //   this.selectFilter(filter)
-    // } else this.selectFilter(0)
-  },
-  // computed: {
-  //   ...mapState({
-  //     newsLists: 'news'
-  //   })
-  // },
-  computed: {
-    newsLists(){
-      console.log('asdad', this)
-      console.log('asda1231d', this.$store)
-      return this.$store.state.news
-    }
-  },
+  computed: mapGetters(['allNews']),
   methods: {
     ...mapActions({
-      getNewsAll: 'news/getNewsAll',
-      getNewsCategoryList: 'news/getNewsCategoryList'
-    }),
-    setFilter(item) {
-      const obj = { ...this.$route.query }
-      const filter = Number(item?.id)
-
-      this.selectFilter(filter)
-      this.$router.push({ query: Object.assign({}, obj, { filter: filter, page: 1 }) })
-    },
-    selectFilter(number) {
-      this.selectFilterNum = number
-    },
-    scrollToTop() {
-      if (process.browser && this.$el && !this.firstLoad) {
-        this.scrollToTopElement(this.$el)
-      }
-    }
+      fetchData: 'fetchNews',
+      addGallery: 'addNews'
+    })
   },
-  async fetch() {
-    this.loading = true
-    const page = this.$route.query?.page || 1
-
-    this.scrollToTop()
-
-    try {
-      if (this.firstLoad) {
-        const data = await this.getNewsCategoryList({
-          params: {
-            'conditions[per_page]': 'all',
-            'conditions[direction]': 'asc'
-          }
-        })
-
-        if (Array.isArray(data)) {
-          this.switchFilters.push(...data)
-        }
-
-        if (!this.switchFilters.some(el => el.id === this.selectFilterNum)) {
-          if (process.server) {
-            this.$nuxt.context.redirect({ query: Object.assign({}, this.$route.query, { filter: 0 }) })
-          }
-          this.selectFilter(0)
-        }
-      }
-
-      const params = {
-        page: page,
-        'conditions[per_page]': this.perPage,
-        'conditions[sort]': 'published_at',
-        'conditions[direction]': 'desc'
-      }
-
-      if (this.selectFilterNum) {
-        params['filters[category_id][]'] = this.selectFilterNum
-      }
-
-      const { data: newData, meta } = await this.getNewsAll({ params })
-
-      this.allNews = Array.isArray(newData)
-          ? newData
-          : []
-      this.newsCurrentPage = meta?.['current_page'] || 1
-      this.newsAllPages = meta?.['last_page'] || 1
-    } catch (e) {
-      if (process.env.NODE_ENV !== 'production') console.error(e)
-    } finally {
-      this.loading = false
-
-      this.$nextTick(() => {
-        this.scrollToTop()
-
-        this.firstLoad = false
-      })
-
-      if (process.server) {
-        if (page > 1 && !this.allNews.length) {
-          this.$nuxt.context.redirect({ query: Object.assign({}, this.$route.query, { page: 1 }) })
-        }
-      }
-    }
+  async mounted(){
+    await this.fetchData();
   }
 }
 </script>
@@ -187,13 +58,33 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  background: rgba(255,186,24, .5);
+}
+
+.btn{
+  background: #fff;
+  width: 39.3rem;
+  color: #000000;
+  height: 6rem;
+  font-size: 3rem;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  border-radius: .5rem;
+  transition: .3s background ease-in-out,
+              .3s color ease-in-out;
+
+  &:hover{
+    background: rgba(255,186,24, 0.9);
+    color: #fff;
+  }
 }
 
 .news-list{
   width: 1240px;
-  padding: 0 20px;
+  padding: 0 20px 60px;
   margin: 5rem auto 0;
+
 
   &__title{
     padding: 5rem 0 10rem;

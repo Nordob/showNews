@@ -1,8 +1,8 @@
 <template>
-  <observer v-if="origin">
+  <observer v-if="origin" @on-change="onChange">
     <img
         ref="img"
-        src="@/assets/testImg.jpg"
+        :src="small"
         :alt="alt"
         :title="title"
         :class="classList">

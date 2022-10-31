@@ -2,21 +2,17 @@
   <a :href="`/news/${news.id}`" class="card-news__wrapper">
     <div class="card-news__head">
       <lazyImg
-          v-if="news.image"
+          v-if="news.url"
           :alt="news.title"
-          :origin="news.image.original"
-          :small="news.image.small"
+          :origin="news.url"
+          :small="news.thumbnailUrl"
           class="card-news__head"
       />
       <div
-          v-if="news.category"
-          :style="{
-          backgroundColor: news.category.background_color,
-          color: news.category.text_color
-        }"
+          v-if="news.id"
           class="card-news__tag"
       >
-        {{ news.category.category_name }}
+        test
       </div>
     </div>
     <div class="card-news__body">
@@ -28,13 +24,6 @@
           class="card-news__text"
           v-html="textCard"
       />
-
-      <p v-if="news.published_at" class="card-news__date">
-        {{ news.published_at }}
-      </p>
-      <p v-else class="card-news__date">
-        Не опубликовано
-      </p>
     </div>
   </a>
 </template>
@@ -62,7 +51,7 @@ export default {
       return this.stripTags(this.news.title)
     },
     textCard() {
-      return this.stripTags(this.news.body)
+      return this.stripTags(this.news.title)
     }
   }
 }
@@ -119,6 +108,7 @@ export default {
     flex-direction: column;
     flex-grow: 1;
     padding: 3rem 2rem;
+    text-align: start;
   }
 
   &__title{
