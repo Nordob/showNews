@@ -41,7 +41,7 @@ export default {
   methods: {
     ...mapActions({
       fetchData: 'fetchNews',
-      addGallery: 'addNews'
+      addNews: 'addNews'
     })
   },
   async mounted(){
